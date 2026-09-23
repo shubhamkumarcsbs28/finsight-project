@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: finsight_db
+    restart: always
+    environment:
+      POSTGRES_USER: finsight_admin
+      POSTGRES_PASSWORD: SecurePostgresPassword123!
+      POSTGRES_DB: finsight_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finsight_backend
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://finsight_admin:SecurePostgresPassword123!@db:5432/finsight_db
+      JWT_SECRET_KEY: enterprise-production-secret-key-finsight-2026
+      CORS_ORIGINS: "*"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: finsight_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

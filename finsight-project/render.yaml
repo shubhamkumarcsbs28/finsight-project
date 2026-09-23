@@ -1,0 +1,34 @@
+services:
+  # Backend FastAPI Service
+  - type: web
+    name: finsight-backend
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: finsight-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "*"
+
+  # Frontend Static Site
+  - type: web
+    name: finsight-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: finsight-backend
+          property: url
+
+databases:
+  - name: finsight-db
+    databaseName: finsight_db
+    user: finsight_user
