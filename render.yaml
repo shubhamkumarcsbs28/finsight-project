@@ -26,7 +26,7 @@ services:
         fromService:
           type: web
           name: finsight-backend
-          property: url
+          property: host
 
 databases:
   - name: finsight-db
